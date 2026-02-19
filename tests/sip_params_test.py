@@ -1,6 +1,6 @@
 import os
 from src.sip_params import get_sip_params, put_sip_params
-from utils.helpers import setup
+from src.utils.helpers import setup
 
 setup()
 

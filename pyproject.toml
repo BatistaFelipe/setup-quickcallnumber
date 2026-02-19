@@ -1,7 +1,11 @@
 [project]
 name = "setup-quickcallnumber"
 version = "1.0.0"
-dependencies = []
+dependencies = [
+    "python-dotenv",
+    "requests",
+    "pytest",
+]
 requires-python = ">=3.8"
 authors = [{ name = "Felipe Batista", email = "contato@felipebatista.dev" }]
 description = "Automation to update quick call number in intercom using API."
@@ -11,3 +15,10 @@ keywords = ["automation", "intercom", "voip", "sip"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[project.scripts]
+setup-intercom = "src.main:main"

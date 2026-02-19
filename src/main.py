@@ -1,5 +1,5 @@
 import os
-from utils.helpers import (
+from .utils.helpers import (
     setup,
     get_arg_parser,
     setup_logger,

@@ -1,6 +1,6 @@
 import json
 import requests
-from utils.helpers import digest_authenticator, RequestError, send_alert_via_slack
+from .utils.helpers import digest_authenticator, RequestError, send_alert_via_slack
 import os
 import logging
 
