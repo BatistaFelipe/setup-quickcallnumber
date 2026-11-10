@@ -26,7 +26,9 @@ pytest
 pytest tests/key_cfg_test.py::test_put_key_cfg_success -v
 
 # Tests — integration (hits the real device configured in .env)
-pytest -m integration
+# --no-cov bypasses the default --cov-fail-under=100 gate, which the
+# integration suite alone can't satisfy.
+pytest -m integration --no-cov
 
 # Lint, format, security
 ruff check src tests

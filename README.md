@@ -83,10 +83,12 @@ Run unit tests (default):
 pytest
 ```
 
-Run integration tests (requires a reachable real device):
+Run integration tests (requires a reachable real device). `--no-cov` is needed
+because the default `addopts` enforces 100% coverage, which integration tests
+alone cannot reach:
 
 ```bash
-pytest -m integration
+pytest -m integration --no-cov
 ```
 
 Lint, format, and security scan:
