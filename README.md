@@ -70,6 +70,42 @@ Passing a specific number via argument:
 setup-intercom --number 3001
 ```
 
+## Deploy
+
+The CLI is designed to run as a scheduled task via `cron`. Install the package
+into a virtual environment and point `crontab` at the installed entrypoint:
+
+```cron
+MAILTO=ops@example.com
+0 7  * * * /root/setup-quickcallnumber/.venv/bin/setup-intercom -n 3001
+0 18 * * * /root/setup-quickcallnumber/.venv/bin/setup-intercom -n 61
+```
+
+`MAILTO` is optional — if set, `cron` emails anything the job writes to stderr
+(the script itself stays quiet on success and alerts Slack on device failures,
+so these emails only fire when `cron` can't even start the job, e.g. missing
+binary or permission error). Requires a working local MTA (`postfix`, `ssmtp`,
+`msmtp`, etc.).
+
+### Log rotation
+
+`app.log` grows unbounded. Configure `logrotate` to keep it in check:
+
+```text
+# /etc/logrotate.d/setup-quickcallnumber
+/root/setup-quickcallnumber/app.log {
+    weekly
+    rotate 8
+    compress
+    missingok
+    notifempty
+    copytruncate
+}
+```
+
+`copytruncate` avoids restarting the process (the CLI is short-lived, but the
+option is safe either way). Test with `logrotate -d /etc/logrotate.d/setup-quickcallnumber`.
+
 ## Testing
 
 The project uses `pytest`. Unit tests use `requests-mock`; integration tests
