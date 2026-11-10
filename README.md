@@ -1,108 +1,110 @@
 # Setup Quick Call Number
 
-Automação em Python para atualizar o número de discagem rápida (**Quick Call Number**) em dispositivos de intercomunicação via API (ISAPI), utilizando autenticação Digest.
+Python automation to update the quick call number on Hikvision intercom devices
+via the ISAPI protocol, using HTTP Digest authentication.
 
-## 🚀 Funcionalidades
+## Features
 
-- **Atualização em lote**: Suporta múltiplos dispositivos configurados por portas.
-- **Atualização completa pós-firmware**: Para leitores Hikvision com firmware recente
-  (DS-K1T673DX-BR, DS-K1T671MF-L), o `callNumber` também é alterado em
-  `/ISAPI/VideoIntercom/keyCfg/1` e o dispositivo é reiniciado automaticamente após
-  a configuração, garantindo que o botão de discagem passe a usar o novo número.
-- **Autenticação Digest**: Integração segura com o protocolo ISAPI.
-- **Alertas no Slack**: Notificação automática em caso de falha na configuração.
-- **CLI Flexível**: Permite definir o número via linha de comando ou variáveis de ambiente.
+- **Batch update**: Supports multiple devices configured by port.
+- **Full post-firmware update**: For recent-firmware Hikvision readers
+  (DS-K1T673DX-BR, DS-K1T671MF-L), the `callNumber` is also updated at
+  `/ISAPI/VideoIntercom/keyCfg/1` and the device is automatically rebooted
+  after configuration, ensuring the dial button uses the new number.
+- **Digest authentication**: Secure integration with the ISAPI protocol.
+- **Slack alerts**: Automatic notification on configuration failure
+  (operator-facing messages are kept in Portuguese).
+- **Flexible CLI**: Accepts the number via command line or environment variable.
 
-## 🛠️ Pré-requisitos
+## Requirements
 
 - Python >= 3.8
-- Dispositivo Intercom com suporte a ISAPI (Ex: Hikvision).
+- Intercom device with ISAPI support (e.g., Hikvision)
 
-## ⚙️ Configuração
+## Configuration
 
-Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+Create a `.env` file at the project root with the following variables:
 
 ```env
 INTERCOM_HOST=192.168.1.100
 INTERCOM_PORTS=80,81,82
 INTERCOM_USER=admin
-INTERCOM_PASSWORD=sua_senha
+INTERCOM_PASSWORD=your_password
 QUICK_CALL_NUMBER=61
-SLACK_URL=https://hooks.slack.com/services/seu_webhook
+SLACK_URL=https://hooks.slack.com/services/your_webhook
 LOG_PATH=app.log
-
 ```
 
-## 💻 Como usar
+All of `INTERCOM_HOST`, `INTERCOM_PORTS`, `INTERCOM_USER`, `INTERCOM_PASSWORD`
+are required at startup — missing or empty values cause the CLI to exit with
+a clear error. `QUICK_CALL_NUMBER` is only required when `--number` is not
+passed on the command line.
 
-### 1. Instalação
+## Usage
 
-Para uso em produção:
+### 1. Installation
+
+For production:
 
 ```bash
 pip install .
-
 ```
 
-Para desenvolvimento (inclui `pytest`, `ruff`, `black`, `pytest-cov`, `requests-mock`, `bandit`):
+For development (includes `pytest`, `pytest-cov`, `requests-mock`, `ruff`,
+`black`, `bandit`):
 
 ```bash
 pip install -e ".[dev]"
-
 ```
 
-### 2. Execução
+### 2. Execution
 
-Você pode executar o script de duas formas:
-
-**Usando o valor padrão do `.env`:**
+Using the default value from `.env`:
 
 ```bash
 setup-intercom
-
 ```
 
-**Passando um número específico via argumento:**
+Passing a specific number via argument:
 
 ```bash
 setup-intercom --number 3001
-
 ```
 
-## 🧪 Testes
+## Testing
 
-O projeto utiliza `pytest`. Testes unitários usam `requests-mock`; testes de
-integração (marcados com `@pytest.mark.integration`) batem em dispositivo real
-e são excluídos por padrão.
+The project uses `pytest`. Unit tests use `requests-mock`; integration tests
+(marked with `@pytest.mark.integration`) hit a real device and are excluded
+by default. The default `pytest` invocation also enforces 100% coverage on
+`src/` — any regression breaks the build.
 
-Rodar testes unitários (default):
+Run unit tests (default):
 
 ```bash
 pytest
-
 ```
 
-Com cobertura:
-
-```bash
-pytest --cov=src --cov-report=term-missing
-
-```
-
-Rodar testes de integração (requer dispositivo real acessível):
+Run integration tests (requires a reachable real device):
 
 ```bash
 pytest -m integration
-
 ```
 
-## 📄 Estrutura do Projeto
+Lint, format, and security scan:
 
-- `src/main.py`: Ponto de entrada da aplicação.
-- `src/sip_params.py`: Lógica SIP (GET/PUT) e orquestração por dispositivo.
-- `src/key_cfg.py`: Cliente ISAPI do keyCfg (configuração do botão de discagem).
-- `src/reboot.py`: Cliente ISAPI de reboot do dispositivo.
-- `src/utils/helpers.py`: Funções auxiliares (Logs, Slack, Auth, CLI).
-- `src/utils/xml_helpers.py`: Parsing e serialização de XML ISAPI.
-- `tests/`: Testes unitários (mockados) e de integração (`@pytest.mark.integration`).
-- `pyproject.toml`: Gerenciamento de dependências e metadados.
+```bash
+ruff check src tests
+black --check src tests
+bandit -r src
+```
+
+## Project Structure
+
+- `src/main.py`: Application entry point and env var validation.
+- `src/sip_params.py`: SIP client (GET/PUT) and per-device orchestration.
+- `src/key_cfg.py`: `keyCfg` ISAPI client (dial button configuration).
+- `src/reboot.py`: Device reboot ISAPI client.
+- `src/utils/helpers.py`: Shared helpers (logging, Slack, auth, CLI, `RequestError`).
+- `src/utils/http.py`: Shared `requests.Session` and timeout constants.
+- `src/utils/xml_helpers.py`: XML parsing (defusedxml) and serialization.
+- `tests/`: Unit tests (mocked) and integration tests (`@pytest.mark.integration`).
+- `pyproject.toml`: Dependencies, tool configuration, and metadata.

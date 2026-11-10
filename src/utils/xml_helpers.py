@@ -6,21 +6,20 @@ from defusedxml import ElementTree as DefusedET
 
 KEY_CFG_NAMESPACE = "http://www.isapi.org/ver20/XMLSchema"
 KEY_CFG_VERSION = "2.0"
-_NS = {"n": KEY_CFG_NAMESPACE}
 
 
-def parse_key_cfg_xml(xml_text):
+def parse_key_cfg_xml(xml_text: str) -> dict[str, str]:
     # Assumes the keyCfg schema is a single level of leaf elements under <KeyCfg>.
     # Nested sub-elements would be silently flattened to empty strings.
     root = DefusedET.fromstring(xml_text)
-    fields = {}
+    fields: dict[str, str] = {}
     for child in root:
         tag = child.tag.split("}", 1)[-1]
         fields[tag] = child.text if child.text is not None else ""
     return fields
 
 
-def build_key_cfg_xml(fields):
+def build_key_cfg_xml(fields: dict[str, str]) -> str:
     ET.register_namespace("", KEY_CFG_NAMESPACE)
     root = ET.Element(
         f"{{{KEY_CFG_NAMESPACE}}}KeyCfg",
@@ -34,9 +33,9 @@ def build_key_cfg_xml(fields):
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{body}'
 
 
-def parse_response_status_xml(xml_text):
+def parse_response_status_xml(xml_text: str) -> dict[str, str]:
     root = DefusedET.fromstring(xml_text)
-    status = {}
+    status: dict[str, str] = {}
     for child in root:
         tag = child.tag.split("}", 1)[-1]
         status[tag] = child.text if child.text is not None else ""

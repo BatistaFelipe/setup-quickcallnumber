@@ -1,6 +1,7 @@
 import pytest
 import requests
 
+from src import reboot as reboot_module
 from src.reboot import reboot_device
 
 REBOOT_URL_PATH = "/ISAPI/System/reboot"
@@ -62,3 +63,16 @@ def test_reboot_device_read_timeout_is_success(requests_mock, base_address):
     response = reboot_device(base_address)
 
     assert response["error"] is False
+
+
+def test_reboot_device_generic_exception(monkeypatch, base_address):
+    def boom(*_args, **_kwargs):
+        raise ValueError("unexpected")
+
+    monkeypatch.setattr(reboot_module.session, "put", boom)
+
+    response = reboot_device(base_address)
+
+    assert response["error"] is True
+    assert "reboot_device()" in response["message"]
+    assert "unexpected" in response["message"]

@@ -1,7 +1,9 @@
 import json
+import logging
 
 import pytest
 
+from src import sip_params as sip_params_module
 from src.sip_params import set_quick_call_number
 
 SIP_PATH = "/ISAPI/System/Network/SIP/StandardSipParam"
@@ -167,3 +169,42 @@ def test_one_port_fails_other_succeeds(
     assert len(port_a_requests) == 1  # only the failing SIP GET
     assert len(port_b_requests) == 5
     assert any(REBOOT_PATH in r.url for r in port_b_requests)
+
+
+def test_reboot_failure_logs_and_continues(
+    requests_mock,
+    sample_sip_json,
+    sip_ok_response_json,
+    sample_key_cfg_xml,
+    sample_ok_status_xml,
+    slack_mock,
+):
+    requests_mock.get(f"{ADDR_A}{SIP_PATH}", json=sample_sip_json)
+    requests_mock.put(f"{ADDR_A}{SIP_PATH}", json=sip_ok_response_json)
+    requests_mock.get(f"{ADDR_A}{KEY_CFG_PATH}", text=sample_key_cfg_xml)
+    requests_mock.put(f"{ADDR_A}{KEY_CFG_PATH}", text=sample_ok_status_xml)
+    requests_mock.put(f"{ADDR_A}{REBOOT_PATH}", status_code=500, reason="reboot down")
+    _mock_port_ok(
+        requests_mock,
+        ADDR_B,
+        sample_sip_json,
+        sip_ok_response_json,
+        sample_key_cfg_xml,
+        sample_ok_status_xml,
+    )
+
+    set_quick_call_number("3001")
+
+    assert slack_mock.call_count >= 1
+    slack_body = json.loads(slack_mock.last_request.text)
+    assert "reboot" in slack_body["text"]
+
+
+def test_set_quick_call_number_missing_env_logs_error(monkeypatch, caplog):
+    monkeypatch.delenv("INTERCOM_HOST", raising=False)
+    monkeypatch.delenv("INTERCOM_PORTS", raising=False)
+
+    with caplog.at_level(logging.ERROR, logger=sip_params_module.__name__):
+        set_quick_call_number("3001")
+
+    assert any("set_quick_call_number()" in r.message for r in caplog.records)
