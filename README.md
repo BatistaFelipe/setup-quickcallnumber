@@ -5,6 +5,10 @@ Automação em Python para atualizar o número de discagem rápida (**Quick Call
 ## 🚀 Funcionalidades
 
 - **Atualização em lote**: Suporta múltiplos dispositivos configurados por portas.
+- **Atualização completa pós-firmware**: Para leitores Hikvision com firmware recente
+  (DS-K1T673DX-BR, DS-K1T671MF-L), o `callNumber` também é alterado em
+  `/ISAPI/VideoIntercom/keyCfg/1` e o dispositivo é reiniciado automaticamente após
+  a configuração, garantindo que o botão de discagem passe a usar o novo número.
 - **Autenticação Digest**: Integração segura com o protocolo ISAPI.
 - **Alertas no Slack**: Notificação automática em caso de falha na configuração.
 - **CLI Flexível**: Permite definir o número via linha de comando ou variáveis de ambiente.
@@ -33,8 +37,17 @@ LOG_PATH=app.log
 
 ### 1. Instalação
 
+Para uso em produção:
+
 ```bash
 pip install .
+
+```
+
+Para desenvolvimento (inclui `pytest`, `ruff`, `black`, `pytest-cov`, `requests-mock`, `bandit`):
+
+```bash
+pip install -e ".[dev]"
 
 ```
 
@@ -58,16 +71,38 @@ setup-intercom --number 3001
 
 ## 🧪 Testes
 
-O projeto utiliza `pytest` para validação das chamadas de API. Para rodar:
+O projeto utiliza `pytest`. Testes unitários usam `requests-mock`; testes de
+integração (marcados com `@pytest.mark.integration`) batem em dispositivo real
+e são excluídos por padrão.
+
+Rodar testes unitários (default):
 
 ```bash
 pytest
 
 ```
 
+Com cobertura:
+
+```bash
+pytest --cov=src --cov-report=term-missing
+
+```
+
+Rodar testes de integração (requer dispositivo real acessível):
+
+```bash
+pytest -m integration
+
+```
+
 ## 📄 Estrutura do Projeto
 
-- `main.py`: Ponto de entrada da aplicação.
-- `sip_params.py`: Lógica de comunicação com a API ISAPI (GET/PUT).
-- `utils/helpers.py`: Funções auxiliares (Logs, Slack, Auth, CLI).
+- `src/main.py`: Ponto de entrada da aplicação.
+- `src/sip_params.py`: Lógica SIP (GET/PUT) e orquestração por dispositivo.
+- `src/key_cfg.py`: Cliente ISAPI do keyCfg (configuração do botão de discagem).
+- `src/reboot.py`: Cliente ISAPI de reboot do dispositivo.
+- `src/utils/helpers.py`: Funções auxiliares (Logs, Slack, Auth, CLI).
+- `src/utils/xml_helpers.py`: Parsing e serialização de XML ISAPI.
+- `tests/`: Testes unitários (mockados) e de integração (`@pytest.mark.integration`).
 - `pyproject.toml`: Gerenciamento de dependências e metadados.

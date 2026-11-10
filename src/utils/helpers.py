@@ -1,9 +1,10 @@
-import os
-from requests.auth import HTTPDigestAuth
-from dotenv import load_dotenv
 import argparse
-import requests
 import logging
+import os
+
+import requests
+from dotenv import load_dotenv
+from requests.auth import HTTPDigestAuth
 
 
 def setup():
@@ -13,13 +14,9 @@ def setup():
 def setup_logger():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-    file_handler = logging.FileHandler(
-        os.getenv("LOG_PATH", "app.log"), encoding="utf-8"
-    )
+    file_handler = logging.FileHandler(os.getenv("LOG_PATH", "app.log"), encoding="utf-8")
     file_handler.setFormatter(formatter)
 
     console_handler = logging.StreamHandler()
@@ -60,7 +57,7 @@ def send_alert_via_slack(message):
                 error=True,
             )
 
-        logger.info(f"✉️  OK: Mensagem de alerta enviada via Slack")
+        logger.info("✉️  OK: Mensagem de alerta enviada via Slack")
     except Exception as error:
         logger.error(f"❌ ERROR send_alert_via_slack(): {str(error)}")
 
