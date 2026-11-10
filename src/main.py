@@ -1,11 +1,12 @@
+import logging
 import os
+
+from .sip_params import set_quick_call_number
 from .utils.helpers import (
-    setup,
     get_arg_parser,
+    setup,
     setup_logger,
 )
-from .sip_params import set_quick_call_number
-import logging
 
 
 def main():
@@ -14,9 +15,7 @@ def main():
     logger = logging.getLogger(__name__)
     args = get_arg_parser()
 
-    quick_call_number = (
-        str(args.number) if args.number else os.getenv("QUICK_CALL_NUMBER")
-    )
+    quick_call_number = str(args.number) if args.number else os.getenv("QUICK_CALL_NUMBER")
 
     logger.info(f"⭐ Starting to set up a quick call number for {quick_call_number}")
 

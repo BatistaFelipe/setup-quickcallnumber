@@ -1,10 +1,14 @@
 import os
+
+import pytest
+
 from src.sip_params import get_sip_params, put_sip_params
 from src.utils.helpers import setup
 
 setup()
 
 
+@pytest.mark.integration
 class TestClass:
     port = 8085
     address = f"http://{os.getenv('INTERCOM_HOST')}:{port}"
